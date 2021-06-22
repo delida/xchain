@@ -4,6 +4,8 @@ github.com/MOACChain/MoacLib v1.0.5 h1:yt238wf/XPliQ/1JuOzRri6jxKPAEXI5p+h26HqGu
 github.com/MOACChain/MoacLib v1.0.5/go.mod h1:63irc302J+w98pSD4OcmiV0pTgtH+SWwHqqe3HE39yc=
 github.com/MOACChain/MoacLib v1.0.999 h1:48A62uaVgdfZD5ArBhoUNX1i4ILouNTy/Ltf0Ow41xw=
 github.com/MOACChain/MoacLib v1.0.999/go.mod h1:63irc302J+w98pSD4OcmiV0pTgtH+SWwHqqe3HE39yc=
+github.com/MOACChain/MoacLib v1.0.1000 h1:3Ua4gJX+ij2Nzi4l9y4HbrbUAM/6J200jhp63iNStF0=
+github.com/MOACChain/MoacLib v1.0.1000/go.mod h1:63irc302J+w98pSD4OcmiV0pTgtH+SWwHqqe3HE39yc=
 github.com/aead/siphash v1.0.1/go.mod h1:Nywa3cDsYNNK3gaciGTWPwHt0wlpNV15vwmswBAUSII=
 github.com/aristanetworks/goarista v0.0.0-20160916080930-938504403730 h1:rob0vYGIX0dpLwAKLzTIWYkyg6JnXVmaW9ht4FwmABg=
 github.com/aristanetworks/goarista v0.0.0-20160916080930-938504403730/go.mod h1:D/tb0zPVXnP7fmsLZjtdUhSsumbK/ij54UXjjVgMGxQ=

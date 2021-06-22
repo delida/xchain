@@ -27,7 +27,6 @@ import (
 	"github.com/MOACChain/MoacLib/types"
 	"github.com/MOACChain/MoacLib/vm"
 	"github.com/MOACChain/xchain/consensus"
-	"github.com/MOACChain/xchain/core/contracts"
 )
 
 var (
@@ -84,14 +83,8 @@ func (p *StateProcessor) Process(block *types.Block, statedb *state.StateDB, cfg
 	//check if any system contract in the txs already, if yes, remove it.
 	//this is to remove any faked sys call from network
 	for _, tx := range block.Transactions() {
-		if tx.SystemFlag() == 0 {
-			txs = append(txs, tx)
-		}
+		txs = append(txs, tx)
 	}
-
-	//insert systx at the beginning of the txs
-	systx := CreateSysTx(statedb)
-	txs = append([]*types.Transaction{systx}, txs...)
 
 	// Iterate over and process the individual transactions
 	for i, tx := range txs {
@@ -177,7 +170,7 @@ func ApplyTransaction(
 
 	if msg.To() == nil {
 		receipt.ContractAddress = crypto.CreateAddress(vmenv.Context.Origin, tx.Nonce())
-		statedb.SetFlag(receipt.ContractAddress, tx.ShardingFlag())
+		statedb.SetFlag(receipt.ContractAddress, 0)
 	} else {
 		receipt.ContractAddress = *msg.To()
 	}
@@ -248,7 +241,7 @@ func ApplyTransactionForCalculateGas(
 
 	if msg.To() == nil {
 		receipt.ContractAddress = crypto.CreateAddress(vmenv.Context.Origin, tx.Nonce())
-		statedb.SetFlag(receipt.ContractAddress, tx.ShardingFlag())
+		statedb.SetFlag(receipt.ContractAddress, 0)
 	} else {
 		receipt.ContractAddress = *msg.To()
 	}
@@ -257,16 +250,4 @@ func ApplyTransactionForCalculateGas(
 	receipt.Logs = statedb.GetLogs(tx.Hash())
 	receipt.Bloom = types.CreateBloom(types.Receipts{receipt})
 	return receipt, gas, err
-}
-
-func CreateSysTx(statedb *state.StateDB) *types.Transaction {
-	// reinsert system contract into it
-	nonce := statedb.GetNonce(contracts.GetInstance().SystemContractCallAddr())
-	data := common.FromHex(EXEC)
-	systx := types.NewTransaction(nonce, contracts.GetInstance().SystemContractEntryAddr(big.NewInt(0)), big.NewInt(0), big.NewInt(0), SYSCALLGASPRICE, uint64(0), nil, data)
-	//systx.from = vm.SystemContractCallAddr
-	systx.SetSystemFlag(uint64(contracts.GetInstance().SystemCntEntry()))
-
-	statedb.Prepare(systx.Hash(), common.Hash{}, 0)
-	return systx
 }

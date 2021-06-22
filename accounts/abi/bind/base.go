@@ -251,15 +251,11 @@ func (c *BoundContract) transact(opts *TransactOpts, contract *common.Address, i
 	// Create the transaction, sign it and schedule it for execution
 	var rawTx *types.Transaction
 	if contract == nil {
-		shardingFlag := uint64(0)
-		via := (*common.Address)(nil)
 		gasLimit_ := new(big.Int).SetUint64(gasLimit)
-		rawTx = types.NewContractCreation(nonce, value, gasLimit_, gasPrice, shardingFlag, via, input)
+		rawTx = types.NewContractCreation(nonce, value, gasLimit_, gasPrice, input)
 	} else {
-		shardingFlag := uint64(0)
-		via := (*common.Address)(nil)
 		gasLimit_ := new(big.Int).SetUint64(gasLimit)
-		rawTx = types.NewTransaction(nonce, c.address, value, gasLimit_, gasPrice, shardingFlag, via, input)
+		rawTx = types.NewTransaction(nonce, c.address, value, gasLimit_, gasPrice, input)
 	}
 	if opts.Signer == nil {
 		return nil, errors.New("no signer to authorize the transaction with")

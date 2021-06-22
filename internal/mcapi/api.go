@@ -960,19 +960,17 @@ func newRPCTransaction(tx *types.Transaction, blockHash common.Hash, blockNumber
 	v, r, s := tx.RawSignatureValues()
 
 	result := &RPCTransaction{
-		From:           from,
-		Gas:            (*hexutil.Big)(tx.GasLimit()),
-		GasPrice:       (*hexutil.Big)(tx.GasPrice()),
-		Hash:           tx.Hash(),
-		Input:          hexutil.Bytes(tx.Data()),
-		Nonce:          hexutil.Uint64(tx.Nonce()),
-		SystemContract: hexutil.Uint64(tx.SystemFlag()),
-		To:             tx.To(),
-		Value:          (*hexutil.Big)(tx.Value()),
-		V:              (*hexutil.Big)(v),
-		R:              (*hexutil.Big)(r),
-		S:              (*hexutil.Big)(s),
-		ShardingFlag:   hexutil.Uint64(tx.ShardingFlag()),
+		From:     from,
+		Gas:      (*hexutil.Big)(tx.GasLimit()),
+		GasPrice: (*hexutil.Big)(tx.GasPrice()),
+		Hash:     tx.Hash(),
+		Input:    hexutil.Bytes(tx.Data()),
+		Nonce:    hexutil.Uint64(tx.Nonce()),
+		To:       tx.To(),
+		Value:    (*hexutil.Big)(tx.Value()),
+		V:        (*hexutil.Big)(v),
+		R:        (*hexutil.Big)(r),
+		S:        (*hexutil.Big)(s),
 	}
 	if blockHash != (common.Hash{}) {
 		result.BlockHash = blockHash
@@ -1241,9 +1239,9 @@ func (args *SendTxArgs) setDefaults(ctx context.Context, b Backend) error {
  */
 func (args *SendTxArgs) toTransaction() *types.Transaction {
 	if args.To == nil {
-		return types.NewContractCreation(uint64(*args.Nonce), (*big.Int)(args.Value), (*big.Int)(args.Gas), (*big.Int)(args.GasPrice), uint64(*args.ShardingFlag), args.Via, args.Data)
+		return types.NewContractCreation(uint64(*args.Nonce), (*big.Int)(args.Value), (*big.Int)(args.Gas), (*big.Int)(args.GasPrice), args.Data)
 	}
-	return types.NewTransaction(uint64(*args.Nonce), *args.To, (*big.Int)(args.Value), (*big.Int)(args.Gas), (*big.Int)(args.GasPrice), uint64(*args.ShardingFlag), args.Via, args.Data)
+	return types.NewTransaction(uint64(*args.Nonce), *args.To, (*big.Int)(args.Value), (*big.Int)(args.Gas), (*big.Int)(args.GasPrice), args.Data)
 }
 
 // submitTransaction is a helper function that submits tx to txPool and logs a message.
@@ -1350,10 +1348,6 @@ func (s *PublicTransactionPoolAPI) SendRawTransaction(ctx context.Context, encod
 		}
 	}
 	log.Debugf("SendRawTransaction tx: %s", tx)
-
-	if tx.ShardingFlag() != 0 && (tx.TxData.Via == nil || *tx.TxData.Via != common.HexToAddress(params.VnodeBeneficialAddress)) {
-		return "", errors.New("via error")
-	}
 
 	if err := s.b.SendTx(ctx, tx); err != nil {
 		return "", err

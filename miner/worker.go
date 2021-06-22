@@ -502,19 +502,6 @@ func (env *Work) commitTransactions(mux *event.TypeMux, txs []*types.Transaction
 	var coalescedLogs []*types.Log
 	var queryQueue []*types.QueryContract
 
-	{
-		systx := core.CreateSysTx(env.state)
-
-		err, receipt := env.commitTransaction(systx, bc, coinbase, gp, mc)
-		if err == nil {
-			// Everything ok, collect the logs and shift in the next transaction from the same account
-			coalescedLogs = append(coalescedLogs, receipt.Logs...)
-			env.tcount++
-		} else {
-			log.Debugf("systx failed ")
-		}
-	}
-
 	length := len(txs)
 	for i := 0; i < length; i++ {
 		for {

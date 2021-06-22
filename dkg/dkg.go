@@ -522,17 +522,6 @@ func (dkg *DKG) HandleSigShares() {
 		}
 		allSigShares[sigShareKey][sigShare.FromIndex.Int64()] = sigShare.Sig
 
-		/*
-			// update each node's height
-			from := dkg.IndexToAddress[sigShare.FromIndex]
-			// block number in sigshare is next block number
-			sci.RecordNodeBlockHeight(
-				from,
-				int(sigShare.BlockNumber)-1,
-				sigShare.BlockHash,
-				int(sigShare.Epoch),
-			)*/
-
 		// Try generate randome number if we have enough sig collected
 		if dkg.IsVSSReady() {
 			sigs := allSigShares[sigShareKey]
@@ -614,29 +603,33 @@ func (dkg *DKG) NewVnodeBlockLoop() {
 	defer log.Debugf("new vnode block loop exits")
 	lastBlock := uint64(0)
 	for {
-		<-t.C
-		currentVnodeBlockNumber, _ := dkg.client.BlockNumber(context.Background())
-		log.Debugf("----------- New vnode block number = %d ----------------", currentVnodeBlockNumber)
-		if currentVnodeBlockNumber > lastBlock {
-			SlowNodeChan <- currentVnodeBlockNumber
-			RevealedShareChan <- currentVnodeBlockNumber
-			UploadVSSConfigChan <- currentVnodeBlockNumber
-			VssStateChan <- currentVnodeBlockNumber
+		select {
+		case <-t.C:
+			currentVnodeBlockNumber, _ := dkg.client.BlockNumber(context.Background())
+			log.Infof("----------- New vnode block number = %d ----------------", currentVnodeBlockNumber)
+			if currentVnodeBlockNumber > lastBlock {
+				SlowNodeChan <- currentVnodeBlockNumber
+				RevealedShareChan <- currentVnodeBlockNumber
+				UploadVSSConfigChan <- currentVnodeBlockNumber
+				VssStateChan <- currentVnodeBlockNumber
 
-			// update last block number
-			lastBlock = currentVnodeBlockNumber
+				// update last block number
+				lastBlock = currentVnodeBlockNumber
+			}
 		}
 	}
 }
 
 // runs indefinitely and update vss config and update vss config if needed
 func (dkg *DKG) VssStateLoop() {
-	log.Debugf("vss state loop, runs on new block")
-	defer log.Errorf("vss state loop exits")
+	log.Infof("vss state loop, runs on new block")
+	defer log.Infof("vss state loop exits")
 	for {
-		<-VssStateChan
-		// download secret shares
-		dkg.RunVssStateMachine()
+		select {
+		case <-VssStateChan:
+			// download secret shares
+			dkg.RunVssStateMachine()
+		}
 	}
 }
 
@@ -645,11 +638,13 @@ func (dkg *DKG) VssUploadConfigLoop() {
 	log.Debugf("vss upload config loop, runs on new block")
 	defer log.Errorf("vss upload config loop exit")
 	for {
-		<-UploadVSSConfigChan
-		// upload secret shares
-		log.Debugf("call UploadVSSConfig from VssStateLoop()")
-		forceUpdate := false
-		dkg.UploadVSSConfig(forceUpdate)
+		select {
+		case <-UploadVSSConfigChan:
+			// upload secret shares
+			log.Debugf("call UploadVSSConfig from VssStateLoop()")
+			forceUpdate := false
+			dkg.UploadVSSConfig(forceUpdate)
+		}
 	}
 }
 

@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"math"
 	"math/big"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -820,11 +819,6 @@ func (pm *ProtocolManager) handleSubnetMsg(p *Peer, msg p2p.Msg) error {
 		// Transactions arrived, make sure we have a valid and fresh chain to handle them
 		if atomic.LoadUint32(&pm.acceptTxs) == 0 {
 			log.Debug("no chain available")
-			for _, tx := range txs {
-				if tx.ShardingFlag() != 0 {
-					txsShard = append(txsShard, tx)
-				}
-			}
 			if len(txsShard) == 0 {
 				break
 			}
@@ -1159,11 +1153,6 @@ func (pm *ProtocolManager) handleMainnetMsg(p *Peer, msg p2p.Msg) error {
 		// Transactions arrived, make sure we have a valid and fresh chain to handle them
 		if atomic.LoadUint32(&pm.acceptTxs) == 0 {
 			log.Debug("no chain available")
-			for _, tx := range txs {
-				if tx.ShardingFlag() != 0 {
-					txsShard = append(txsShard, tx)
-				}
-			}
 			if len(txsShard) == 0 {
 				break
 			}
@@ -1189,7 +1178,7 @@ func (pm *ProtocolManager) handleMainnetMsg(p *Peer, msg p2p.Msg) error {
 
 		for _, vaultEventWithSig := range vaultEventWithSigs {
 			p.MarkVaultEventWithSigs(vaultEventWithSig.Hash())
-			pm.sentinel.ProcessVaultEventWithSig(vaultEventWithSig)
+			pm.sentinel.RecordVaultEventWithSig(vaultEventWithSig)
 			// sent to peers who don't have the event
 			pm.vaultEventWithSigCh <- *vaultEventWithSig
 		}
@@ -1260,31 +1249,11 @@ func (pm *ProtocolManager) BroadcastBlock(block *types.Block, propagate bool) {
 // BroadcastTx will propagate a transaction to all peers which are not known to
 // already have the given transaction.
 func (pm *ProtocolManager) BroadcastTx(tx *types.Transaction) {
-	log.Debugf("tx: [%v], %x, %x", tx.ShardingFlag(), tx.Hash(), tx.To())
-	var subnetid string
+	log.Debugf("tx: %x, %x", tx.Hash(), tx.To())
 	var network string
 	// default to be mainnet peerset
 	peerSet := pm.p2pManager.peerSet
 	network = "mainnet"
-	// if it's subnet tx, use subnet peerset
-	if tx.ShardingFlag() != 0 {
-		if tx.To() != nil {
-			subnetid = strings.ToLower(fmt.Sprintf("%s", tx.To().String()))
-			log.Debugf("in broadcast tx: p2pmanager: %s, subnetid: %s", pm.p2pManager.String(), subnetid)
-
-			contractAddress := common.HexToAddress(subnetid)
-			if pm.isSubnetP2PEnabled(contractAddress, "broadcastTx") {
-				peerSet = pm.p2pManager.subnetPeerSets[subnetid]
-				network = subnetid
-
-				if peerSet == nil {
-					log.Errorf("subnet is not available for %s", subnetid)
-					return
-				}
-			}
-		}
-	}
-
 	peers := peerSet.PeersWithoutTx(tx.Hash())
 	//FIXME include this again: peers = peers[:int(math.Sqrt(float64(len(peers))))]
 	log.Debugf("broadcast tx with: %s, peers: %d", network, len(peers))

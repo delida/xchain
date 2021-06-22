@@ -3,7 +3,7 @@ module github.com/MOACChain/xchain
 go 1.16
 
 require (
-	github.com/MOACChain/MoacLib v1.0.999
+	github.com/MOACChain/MoacLib v1.0.1000
 	github.com/beevik/ntp v0.3.0
 	github.com/cespare/cp v1.1.1
 	github.com/davecgh/go-spew v1.1.1
@@ -51,4 +51,5 @@ require (
 	gotest.tools/v3 v3.0.3 // indirect
 )
 
-//replace  github.com/innowells/bls_lib/v2 => /media/yifan/ssd/go/src/github.com/innowells/bls_lib
+//replace github.com/innowells/bls_lib/v2 => /media/yifan/ssd/go/src/github.com/innowells/bls_lib
+//replace github.com/MOACChain/MoacLib => /media/yifan/ssd/go/src/github.com/MOACChain/MoacLib

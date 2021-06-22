@@ -44,6 +44,7 @@ type VaultConfig struct {
 	ChainRPC        string `json:"rpc"  gencodec:"required"`
 	ChainFuncPrefix string `json:"prefix"  gencodec:"required"`
 	VaultAddress    string `json:"address"  gencodec:"required"`
+	GasPrice        uint64 `json:"gasprice"`
 }
 
 type VaultPairConfig struct {
